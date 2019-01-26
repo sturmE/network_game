@@ -7,6 +7,7 @@
 
 #include <enet/enet.h>
 #include <string>
+#include <vector>
 
 
 int main(int argc, char** argv)
@@ -15,6 +16,7 @@ int main(int argc, char** argv)
         fprintf (stderr, "An error occurred while initializing ENet.\n");
         return EXIT_FAILURE;
     }
+    atexit(enet_deinitialize);
     
     ENetAddress address;
     ENetHost * server;
@@ -23,7 +25,7 @@ int main(int argc, char** argv)
     /* enet_address_set_host (& address, "x.x.x.x"); */
     address.host = ENET_HOST_ANY;
     /* Bind the server to port 1234. */
-    address.port = 1234;
+    address.port = 44951;
     server = enet_host_create (& address /* the address to bind the server host to */,
                                32      /* allow up to 32 clients and/or outgoing connections */,
                                2      /* allow up to 2 channels to be used, 0 and 1 */,
@@ -35,41 +37,49 @@ int main(int argc, char** argv)
         exit (EXIT_FAILURE);
     }
     
+    std::vector<ENetPeer*> peers;
     
-    
-    ENetEvent event;
-    /* Wait up to 1000 milliseconds for an event. */
-    while (enet_host_service(server, & event, 1000) > 0)
-    {
-        switch (event.type)
+    printf("server is running...\n");
+    while (true) {
+        ENetEvent event;
+        /* Wait up to 1000 milliseconds for an event. */
+        while (enet_host_service(server, & event, 1000) > 0)
         {
-            case ENET_EVENT_TYPE_CONNECT:
-                printf ("A new client connected from %x:%u.\n",
-                        event.peer -> address.host,
-                        event.peer -> address.port);
-                /* Store any relevant client information here. */
-                event.peer -> data = nullptr;
-                break;
-            case ENET_EVENT_TYPE_RECEIVE:
-                printf ("A packet of length %u containing %s was received from %s on channel %u.\n",
-                        event.packet->dataLength,
-                        event.packet->data,
-                        event.peer->data,
-                        event.channelID);
-                /* Clean up the packet now that we're done using it. */
-                enet_packet_destroy (event.packet);
-                
-                break;
-                
-            case ENET_EVENT_TYPE_DISCONNECT:
-                printf ("%s disconnected.\n", event.peer -> data);
-                /* Reset the peer's client information. */
-                event.peer -> data = NULL;
+            switch (event.type)
+            {
+                case ENET_EVENT_TYPE_CONNECT: {
+                    printf ("A new client connected from %x:%u.\n",
+                            event.peer -> address.host,
+                            event.peer -> address.port);
+                    /* Store any relevant client information here. */
+                    event.peer->data = nullptr;
+                    peers.emplace_back(event.peer);
+                    break;
+                }
+                case ENET_EVENT_TYPE_RECEIVE: {
+                    printf ("A packet of length %u containing %s was received from %s on channel %u.\n",
+                            event.packet->dataLength,
+                            event.packet->data,
+                            event.peer->data,
+                            event.channelID);
+                                                            
+                    for (ENetPeer* peer : peers) {
+                        if (peer != event.peer) {
+                            enet_peer_send(peer, 0, event.packet);
+                        }
+                    }
+                    break;
+                }
+                case ENET_EVENT_TYPE_DISCONNECT: {
+                    printf ("%s disconnected.\n", event.peer -> data);
+                    event.peer->data = nullptr;
+                    std::remove(begin(peers), end(peers), event.peer);
+                }
+                default: {
+                    printf("unhandled event type\n");
+                }
+            }
         }
     }
-    
-    
-    
-    atexit (enet_deinitialize);
 }
 

@@ -10,7 +10,6 @@
 #include <SFML/Graphics.hpp>
 #include "RenderContext.h"
 #include "PlayerEntity.h"
-#include <enet/enet.h>
 
 Game::Game()
 {}
@@ -37,7 +36,6 @@ void Game::onStart(sf::RenderWindow* window)
     onWindowResize();
     _mainView.setCenter(0, 0);
     _renderWindow->setView(_mainView);
-    
 }
 
 void Game::onFrame(float dt)
