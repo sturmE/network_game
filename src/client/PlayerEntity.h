@@ -25,8 +25,5 @@ public:
     virtual void submit(RenderQueue* renderQueue) final;
     virtual void setPosition(float x, float y) final;
 private:
-    void handleInput(float dt);
-    
-private:
     SpritePtr _sprite;
 };

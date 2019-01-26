@@ -39,6 +39,23 @@ workspace "dirty"
         include "external/enet.lua"
     group ""
 
+project "dirtycommon"
+    kind "SharedLib"
+    language "C++"
+    targetdir "bin"
+
+    sysincludedirs {
+    }
+
+    includedirs {
+        "src/common/**"
+    }
+
+    files {
+        "src/common/**.cpp",
+        "src/common/**.h",
+    }
+
 project "dirtyclient"
     kind "ConsoleApp"
     language "C++"
@@ -50,6 +67,7 @@ project "dirtyclient"
        buildoptions {"-F ../external/SFML-2.5.1-macos-clang/extlibs"}
        linkoptions  {"-F ../external/SFML-2.5.1-macos-clang/extlibs"}
        links {
+            "dirtycommon",
             "enet",
             "SFML.framework",
             "sfml-graphics.framework",
@@ -67,7 +85,8 @@ project "dirtyclient"
     sysincludedirs {
         "external/SFML-2.5.1-macos-clang/include",
         "external/enet/include",
-        "external/json/single_include/nlohmann"
+        "external/json/single_include/nlohmann",
+        "src/common/**.h",
     }
 
     includedirs {
@@ -84,14 +103,16 @@ project "dirtyserver"
     language "C++"
     targetdir "bin"
 
-    filter "system:macosx"       
+    filter "system:macosx"
        links {
-            "enet",            
+            "dirtycommon",
+            "enet",
         }
 
     sysincludedirs {
         "external/enet/include",
-        "external/json/single_include/nlohmann"
+        "external/json/single_include/nlohmann",
+        "src/common/**.h",
     }
 
     includedirs {

@@ -11,6 +11,7 @@
 #include "Event.h"
 #include "World.h"
 #include "EntityType.h"
+#include <Messages.h>
 
 using EntityId = uint64_t;
 
@@ -51,6 +52,7 @@ public:
     virtual void update(float dt);
     virtual void submit(RenderQueue* renderQueue);
     virtual void handleEvent(const Event& event);
+protected:
 };
 
 using EntityPtr = std::shared_ptr<Entity>;

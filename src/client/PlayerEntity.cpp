@@ -35,7 +35,38 @@ void PlayerEntity::setPosition(float x, float y)
 
 void PlayerEntity::update(float dt)
 {
-    handleInput(dt);
+    const sf::Keyboard::Key left = sf::Keyboard::Key::A;
+    const sf::Keyboard::Key right = sf::Keyboard::Key::D;
+    const sf::Keyboard::Key down = sf::Keyboard::Key::S;
+    const sf::Keyboard::Key up = sf::Keyboard::Key::W;
+    const bool leftIsPressed = sf::Keyboard::isKeyPressed(left);
+    const bool rightIsPressed = sf::Keyboard::isKeyPressed(right);
+    const bool upIsPressed = sf::Keyboard::isKeyPressed(up);
+    const bool downIsPressed = sf::Keyboard::isKeyPressed(down);
+    
+    float x = 0;
+    float y = 0;
+    if (leftIsPressed) {
+        x += -100.f;
+    }
+    
+    if (upIsPressed) {
+        y += -100.f;
+    }
+    
+    if (rightIsPressed) {
+        x += 100.f;
+    }
+    
+    if (downIsPressed) {
+        y += 100.f;
+    }
+    
+    sf::Vector2f newPosition = _sprite->getPosition() + sf::Vector2f(x, y) * dt;
+    _sprite->setPosition(newPosition.x, newPosition.y);
+    
+    
+    // TODO:emitMessage
 }
 
 void PlayerEntity::handleEvent(const Event& event)
@@ -47,22 +78,4 @@ void PlayerEntity::handleEvent(const Event& event)
 void PlayerEntity::submit(RenderQueue* renderQueue)
 {
     renderQueue->push(buildSortKey(RenderLayer::World), _sprite.get());
-}
-
-void PlayerEntity::handleInput(float dt)
-{
-    float xAxis = 0;
-    float yAxis = 0;
-    bool xAxisHasDirection = false;
-    bool yAxisHasDirection = false;
-    bool axisHasDirection = false;
-    bool buttonIsPressed = false;
-    const sf::Keyboard::Key left = sf::Keyboard::Key::A;
-    const sf::Keyboard::Key right = sf::Keyboard::Key::D;
-    const sf::Keyboard::Key down = sf::Keyboard::Key::S;
-    const sf::Keyboard::Key up = sf::Keyboard::Key::W;
-    const bool leftIsPressed = sf::Keyboard::isKeyPressed(left);
-    const bool rightIsPressed = sf::Keyboard::isKeyPressed(right);
-    const bool upIsPressed = sf::Keyboard::isKeyPressed(up);
-    const bool downIsPressed = sf::Keyboard::isKeyPressed(down);
 }
