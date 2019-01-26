@@ -45,15 +45,12 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
     
-    /* Wait up to 5 seconds for the connection attempt to succeed. */
+    // wait 5 seconds for connection
     if (enet_host_service(client, & enetEvent, 5000) > 0 && enetEvent.type == ENET_EVENT_TYPE_CONNECT) {
-        printf("Connection to localhost:1234 succeeded.\n");
+        printf("Connection to server succeeded.\n");
     } else {
-        /* Either the 5 seconds are up or a disconnect event was */
-        /* received. Reset the peer in the event the 5 seconds   */
-        /* had run out without any significant event.            */
         enet_peer_reset(server);
-        printf("Connection to localhost:1234 failed.\n");
+        printf("Connection to server failed.\n");
     }
     
     
