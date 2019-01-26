@@ -86,10 +86,10 @@ project "dirtyclient"
         "external/SFML-2.5.1-macos-clang/include",
         "external/enet/include",
         "external/json/single_include/nlohmann",
-        "src/common/**.h",
     }
 
     includedirs {
+        "src/common",
         "src/client/**"
     }
 
@@ -111,11 +111,11 @@ project "dirtyserver"
 
     sysincludedirs {
         "external/enet/include",
-        "external/json/single_include/nlohmann",
-        "src/common/**.h",
+        "external/json/single_include/nlohmann",        
     }
 
     includedirs {
+        "src/common",
         "src/server/**"
     }
 

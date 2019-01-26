@@ -10,8 +10,10 @@
 #include <SFML/Graphics.hpp>
 #include "RenderContext.h"
 #include "PlayerEntity.h"
+#include "Network.h"
 
-Game::Game()
+Game::Game(ENetPeer* server)
+: _network(new Network(server))
 {}
 
 void Game::onWindowResize()
@@ -26,7 +28,7 @@ void Game::onStart(sf::RenderWindow* window)
     
     _renderWindow = window;
     // setup world
-    _world.reset(new World(_assetManager.get()));
+    _world.reset(new World(_assetManager.get(), _network.get()));
     
     
     std::shared_ptr<PlayerEntity> e(new PlayerEntity());
@@ -43,9 +45,7 @@ void Game::onFrame(float dt)
     RenderContext renderContext;
     renderContext.renderQueue = &_renderQueue;
     renderContext.view = &_mainView;
-    
-    
-    
+            
     _world->simulate(dt);
     _world->submit(renderContext);
     _renderQueue.render(_renderWindow);    

@@ -8,6 +8,7 @@
 #include <enet/enet.h>
 #include <string>
 #include <vector>
+#include "Event.h"
 
 
 int main(int argc, char** argv)
@@ -52,7 +53,11 @@ int main(int argc, char** argv)
                     break;
                 }
                 case ENET_EVENT_TYPE_RECEIVE: {
-                    printf ("A packet of length %u containing %s was received from %s on channel %u.\n", event.packet->dataLength, event.packet->data, event.peer->data, event.channelID);
+                    EventType eventType;
+                    if (event.packet->dataLength > 0) {
+                        eventType = (EventType)event.packet->data[0];
+                    }
+                    printf ("Received event:%d.\n", (uint32_t)eventType);
                     
                     // broadcast packet to all other peers
                     for (ENetPeer* peer : peers) {

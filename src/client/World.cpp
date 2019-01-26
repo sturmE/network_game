@@ -7,9 +7,11 @@
 
 #include "World.h"
 #include "Entity.h"
+#include "Game.h"
 
-World::World(AssetManager* am)
+World::World(AssetManager* am, Network* nw)
 : _assetManager(am)
+, _network(nw)
 {}
 
 World::~World() {
@@ -71,3 +73,4 @@ void World::submit(const RenderContext& renderContext)
         entity->submit(renderContext.renderQueue);
     }
 }
+

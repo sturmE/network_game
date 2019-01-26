@@ -20,7 +20,7 @@ const std::string kWindowName = "dirty";
 
 ENetHost* client;
 ENetPeer* server;
-Game game;
+std::unique_ptr<Game> game;
 
 int main(int argc, char** argv) {
     client = enet_host_create (NULL /* create a client host */,
@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
         printf("Connection to server failed.\n");
     }
     
+    game.reset(new Game(server));
     
     sf::RenderWindow window(sf::VideoMode(kWindowWidth, kWindowHeight), kWindowName,  sf::Style::Titlebar  | sf::Style::Close);
     window.setKeyRepeatEnabled(false);
@@ -68,7 +69,7 @@ int main(int argc, char** argv) {
 //    json settings = json::parse(json_str);
     
     
-    game.onStart(&window);
+    game->onStart(&window);
     
     while (window.isOpen()) {
         sf::Event event;
@@ -80,7 +81,7 @@ int main(int argc, char** argv) {
                     break;
                 }
                 case sf::Event::Resized: {
-                    game.onWindowResize();
+                    game->onWindowResize();
                     break;
                 }
                 case sf::Event::KeyPressed: {
@@ -108,9 +109,6 @@ int main(int argc, char** argv) {
         sf::Time frameTime = frameClock.restart();
         sf::Time gameTime = gameClock.getElapsedTime();
         
-        ENetPacket* packet = enet_packet_create("packet", strlen ("packet") + 1, ENET_PACKET_FLAG_RELIABLE);
-        enet_peer_send(server, 0, packet);
-        
         // get messages from server - turn them into events and handle them in the game simulation
         while (enet_host_service(client, &enetEvent, 0) > 0) {
             switch (enetEvent.type) {
@@ -129,14 +127,29 @@ int main(int argc, char** argv) {
 
         
         window.clear(sf::Color::Black);
-        game.onFrame(frameTime.asSeconds());
+        game->onFrame(frameTime.asSeconds());
         
         
         // game onFrame should push events for us to send back to the server here
         
         window.display();
     }
-    game.onShutdown();
+    game->onShutdown();
+    
+    ENetEvent event;
+    enet_peer_disconnect(server, 0);
+    
+    while (enet_host_service (client, & event, 3000) > 0) {
+        switch (event.type) {
+            case ENET_EVENT_TYPE_RECEIVE:
+                enet_packet_destroy(event.packet);
+                break;
+            case ENET_EVENT_TYPE_DISCONNECT:
+                printf("Disconnection succeeded.");
+                break;
+        }
+    }
+    enet_peer_reset(server);
     
     return 0;
 }

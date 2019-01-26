@@ -26,3 +26,8 @@ void Entity::update(float dt) {}
 void Entity::submit(RenderQueue* renderQueue) {};
 void Entity::handleEvent(const Event& event) {}
 
+//void Entity::emitEvent(const std::shared_ptr<Event>& event)
+//{
+//    _world->emitEvent(*event.get());
+//}
+

@@ -62,11 +62,12 @@ void PlayerEntity::update(float dt)
         y += 100.f;
     }
     
-    sf::Vector2f newPosition = _sprite->getPosition() + sf::Vector2f(x, y) * dt;
-    _sprite->setPosition(newPosition.x, newPosition.y);
+    if (x > 0 || y > 0) {
+        sf::Vector2f newPosition = _sprite->getPosition() + sf::Vector2f(x, y) * dt;
+        _sprite->setPosition(newPosition.x, newPosition.y);
     
-    
-    // TODO:emitMessage
+        emitEvent(PositionUpdateEvent(getId(), newPosition.x, newPosition.y));
+    }
 }
 
 void PlayerEntity::handleEvent(const Event& event)
