@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "Event.h"
 #include <enet/enet.h>
 #include <vector>
 
@@ -26,7 +27,7 @@ template <typename T>
 void Network::sendMessage(const T& msg)
 {
     _buffer.clear();
-    msg.serialize(_buffer);
+    event::serialize(msg, _buffer);
     
     ENetPacket* packet = enet_packet_create(_buffer.data(), _buffer.size(), ENET_PACKET_FLAG_RELIABLE);
     enet_peer_send(_peer, 0, packet);

@@ -56,6 +56,8 @@ bool World::addEntity(const EntityPtr& e)
         e->onAddedToWorld();
         
         return true;
+    } else {
+        printf("Entity with id:%ld already exists\n", e->getId());
     }
     return false;
 }

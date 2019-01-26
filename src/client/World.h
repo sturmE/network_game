@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "Event.h"
 #include "RenderContext.h"
 #include "Network.h"
 
+class Event;
 class AssetManager;
 class Entity;
 using EntityId = uint64_t;

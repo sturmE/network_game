@@ -8,30 +8,23 @@
 #pragma once
 
 #include "RenderQueue.h"
-#include "Event.h"
-#include "World.h"
 #include "EntityType.h"
 
 using EntityId = uint64_t;
 
+class Event;
 class World;
 
 class Entity {
-private:
-    static EntityId createId() {
-        static uint64_t key = 0;
-        return ++key;
-    };
-
-    const EntityId _id{createId()};
-
-    
+private:    
+    const EntityId _id;
 public:
     // "components"
     World* _world {nullptr};
     sf::Sprite* _sprite{nullptr};
 public:
     Entity();
+    Entity(uint64_t entityId);
     virtual ~Entity();
     
     void setWorld(World* world);
@@ -50,13 +43,7 @@ public:
     
     virtual void update(float dt);
     virtual void submit(RenderQueue* renderQueue);
-    virtual void handleEvent(const Event& event);
-protected:
-    template <typename T>
-    void emitEvent(const T& event)
-    {
-        _world->emitEvent(event);
-    }
+    virtual void handleEvent(const Event* event);
 };
 
 using EntityPtr = std::shared_ptr<Entity>;

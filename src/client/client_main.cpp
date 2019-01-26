@@ -14,13 +14,39 @@
 #include <enet/enet.h>
 using json = nlohmann::json;
 
-const uint32_t kWindowWidth = 1600.f * 2.f;
-const uint32_t kWindowHeight = 900.f * 2.f;
+const uint32_t kWindowWidth = 1600.f;
+const uint32_t kWindowHeight = 900.f;
 const std::string kWindowName = "dirty";
 
 ENetHost* client;
 ENetPeer* server;
 std::unique_ptr<Game> game;
+
+
+void pushInputEvents(std::vector<EventPtr>& events)
+{
+    const sf::Keyboard::Key left = sf::Keyboard::Key::A;
+    const sf::Keyboard::Key right = sf::Keyboard::Key::D;
+    const sf::Keyboard::Key down = sf::Keyboard::Key::S;
+    const sf::Keyboard::Key up = sf::Keyboard::Key::W;
+    const bool leftIsPressed = sf::Keyboard::isKeyPressed(left);
+    const bool rightIsPressed = sf::Keyboard::isKeyPressed(right);
+    const bool upIsPressed = sf::Keyboard::isKeyPressed(up);
+    const bool downIsPressed = sf::Keyboard::isKeyPressed(down);
+    
+    if (leftIsPressed) {
+        events.emplace_back(new KeyPressEvent(sf::Keyboard::Key::A));
+    }
+    if (rightIsPressed) {
+        events.emplace_back(new KeyPressEvent(sf::Keyboard::Key::D));
+    }
+    if (upIsPressed) {
+        events.emplace_back(new KeyPressEvent(sf::Keyboard::Key::W));
+    }
+    if (downIsPressed) {
+        events.emplace_back(new KeyPressEvent(sf::Keyboard::Key::S));
+    }
+}
 
 int main(int argc, char** argv) {
     client = enet_host_create (NULL /* create a client host */,
@@ -46,7 +72,7 @@ int main(int argc, char** argv) {
     }
     
     // wait 5 seconds for connection
-    if (enet_host_service(client, & enetEvent, 5000) > 0 && enetEvent.type == ENET_EVENT_TYPE_CONNECT) {
+    if (enet_host_service(client, &enetEvent, 5000) > 0 && enetEvent.type == ENET_EVENT_TYPE_CONNECT) {
         printf("Connection to server succeeded.\n");
     } else {
         enet_peer_reset(server);
@@ -71,6 +97,9 @@ int main(int argc, char** argv) {
     
     game->onStart(&window);
     
+    std::vector<EventPtr> events;
+    
+    bool hasFocus = true;
     while (window.isOpen()) {
         sf::Event event;
         
@@ -88,16 +117,17 @@ int main(int argc, char** argv) {
                     if (event.key.code == sf::Keyboard::Key::Escape) {
                         window.close();
                     }
-                    
                     break;
                 }
                 case sf::Event::KeyReleased: {
                     break;
                 }
                 case sf::Event::LostFocus: {
+                    hasFocus = false;
                     break;
                 }
                 case sf::Event::GainedFocus: {
+                    hasFocus = true;
                     break;
                 }
                 default: {
@@ -109,15 +139,41 @@ int main(int argc, char** argv) {
         sf::Time frameTime = frameClock.restart();
         sf::Time gameTime = gameClock.getElapsedTime();
         
+        events.clear();
+        if (hasFocus) {
+            pushInputEvents(events);
+        }
+        
         // get messages from server - turn them into events and handle them in the game simulation
         while (enet_host_service(client, &enetEvent, 0) > 0) {
             switch (enetEvent.type) {
                 case ENET_EVENT_TYPE_CONNECT:
                     break;
-                case ENET_EVENT_TYPE_RECEIVE:
-                    printf("received packet\n");
+                case ENET_EVENT_TYPE_RECEIVE: {
+                    const Event* baseEvent = nullptr;
+                    baseEvent = reinterpret_cast<Event*>(enetEvent.packet->data);
+                    printf("Received event:%s from server\n", to_string(baseEvent->type).data());
+                    switch (baseEvent->type) {
+                        case EventType::OnConnect: {
+                            events.emplace_back(event::deserialize<OnConnectEvent>(baseEvent));
+                            break;
+                        }
+                        case EventType::PositionUpdate: {
+                            events.emplace_back(event::deserialize<PositionUpdateEvent>(baseEvent));
+                            break;
+                        }
+                        case EventType::CreateEntity: {
+                            events.emplace_back(event::deserialize<CreateEntityEvent>(baseEvent));
+                            break;
+                        }
+                        case EventType::DestroyEntity: {
+                            events.emplace_back(event::deserialize<DestroyEntityEvent>(baseEvent));
+                            break;
+                        }
+                    }
                     enet_packet_destroy(enetEvent.packet);
                     break;
+                }
                 case ENET_EVENT_TYPE_DISCONNECT:
                     break;
                 default:
@@ -127,10 +183,8 @@ int main(int argc, char** argv) {
 
         
         window.clear(sf::Color::Black);
-        game->onFrame(frameTime.asSeconds());
         
-        
-        // game onFrame should push events for us to send back to the server here
+        game->onFrame(events, frameTime.asSeconds());
         
         window.display();
     }
@@ -146,6 +200,9 @@ int main(int argc, char** argv) {
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
                 printf("Disconnection succeeded.");
+                break;
+            default:
+                printf("unhandled event type");
                 break;
         }
     }

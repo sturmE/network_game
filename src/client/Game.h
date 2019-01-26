@@ -14,11 +14,16 @@
 #include "AssetManager.h"
 #include <enet/enet.h>
 
+
+class PlayerEntity;
 class Network;
+class Event;
+using EventPtr = std::shared_ptr<Event>;
 
 class Game
 {
 private:
+    std::shared_ptr<PlayerEntity> _player;
     std::unique_ptr<Network> _network;
     RenderQueue _renderQueue;
     std::unique_ptr<World> _world;
@@ -29,7 +34,7 @@ public:
     Game(ENetPeer* server);
     void onWindowResize();
     void onStart(sf::RenderWindow* renderWindow);
-    void onFrame(float dt);
+    void onFrame(const std::vector<EventPtr>& events, float dt);
     void onShutdown();
 };
 

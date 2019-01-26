@@ -11,8 +11,16 @@
 #include "Event.h"
 
 
+struct PeerData
+{
+    PeerData(uint32_t id) : peerId(id) {}
+    
+    const uint32_t peerId { 0 };
+};
+
 int main(int argc, char** argv)
 {
+    uint32_t peerIdKey = 1;
     if (enet_initialize () != 0) {
         fprintf (stderr, "An error occurred while initializing ENet.\n");
         return EXIT_FAILURE;
@@ -46,18 +54,27 @@ int main(int argc, char** argv)
             switch (event.type)
             {
                 case ENET_EVENT_TYPE_CONNECT: {
-                    printf ("A new client connected from %x:%u.\n", event.peer -> address.host, event.peer -> address.port);
+                    printf("A new client connected from %x:%u.\n", event.peer->address.host, event.peer->address.port);
                     /* Store any relevant client information here. */
-                    event.peer->data = nullptr;
+                    PeerData* peerData = new PeerData(peerIdKey++);
+                    event.peer->data = peerData;
+                    
+                    std::vector<std::pair<uint64_t, EntityType>> entities;
+                    for (ENetPeer* peer : peers) {
+                        entities.emplace_back(((PeerData*)peer->data)->peerId, EntityType::Player);
+                    }
+                    
+                    std::vector<uint8_t> buffer;
+                    event::serialize(OnConnectEvent(peerData->peerId, std::move(entities)), buffer);
+                    ENetPacket* packet = enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE);                    
+                    enet_peer_send(event.peer, 0, packet);                                        
                     peers.emplace_back(event.peer);
                     break;
                 }
                 case ENET_EVENT_TYPE_RECEIVE: {
-                    EventType eventType;
-                    if (event.packet->dataLength > 0) {
-                        eventType = (EventType)event.packet->data[0];
-                    }
-                    printf ("Received event:%d.\n", (uint32_t)eventType);
+                    Event* baseEvent = nullptr;
+                    baseEvent = reinterpret_cast<Event*>(event.packet->data);
+                    printf ("Received event:%s from peer:%d\n", to_string(baseEvent->type).data(), ((PeerData*)event.peer->data)->peerId);
                     
                     // broadcast packet to all other peers
                     for (ENetPeer* peer : peers) {
@@ -68,12 +85,14 @@ int main(int argc, char** argv)
                     break;
                 }
                 case ENET_EVENT_TYPE_DISCONNECT: {
-                    printf("%s disconnected.\n", event.peer -> data);
-                    event.peer->data = nullptr;
-                    std::remove(begin(peers), end(peers), event.peer);
+                    printf("%d disconnected\n", ((PeerData*)event.peer->data)->peerId);
+                    delete (PeerData*)event.peer->data;
+                    peers.erase(std::remove(begin(peers), end(peers), event.peer), end(peers));
+                    break;
                 }
                 default: {
-                    printf("unhandled event type\n");
+                    printf("unhandled event type:%d\n", event.type);
+                    break;
                 }
             }
         }

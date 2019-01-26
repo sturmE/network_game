@@ -8,6 +8,11 @@
 #include "PlayerEntity.h"
 #include "AssetManager.h"
 #include "World.h"
+#include "Event.h"
+
+PlayerEntity::PlayerEntity(uint64_t entityId)
+: Entity(entityId)
+{}
 
 PlayerEntity::PlayerEntity()
 {}
@@ -35,44 +40,50 @@ void PlayerEntity::setPosition(float x, float y)
 
 void PlayerEntity::update(float dt)
 {
-    const sf::Keyboard::Key left = sf::Keyboard::Key::A;
-    const sf::Keyboard::Key right = sf::Keyboard::Key::D;
-    const sf::Keyboard::Key down = sf::Keyboard::Key::S;
-    const sf::Keyboard::Key up = sf::Keyboard::Key::W;
-    const bool leftIsPressed = sf::Keyboard::isKeyPressed(left);
-    const bool rightIsPressed = sf::Keyboard::isKeyPressed(right);
-    const bool upIsPressed = sf::Keyboard::isKeyPressed(up);
-    const bool downIsPressed = sf::Keyboard::isKeyPressed(down);
-    
-    float x = 0;
-    float y = 0;
-    if (leftIsPressed) {
-        x += -100.f;
-    }
-    
-    if (upIsPressed) {
-        y += -100.f;
-    }
-    
-    if (rightIsPressed) {
-        x += 100.f;
-    }
-    
-    if (downIsPressed) {
-        y += 100.f;
-    }
-    
-    if (x > 0 || y > 0) {
-        sf::Vector2f newPosition = _sprite->getPosition() + sf::Vector2f(x, y) * dt;
+    if (_x > 0 || _y > 0) {
+        sf::Vector2f newPosition = _sprite->getPosition() + sf::Vector2f(_x, _y) * dt;
         _sprite->setPosition(newPosition.x, newPosition.y);
     
-        emitEvent(PositionUpdateEvent(getId(), newPosition.x, newPosition.y));
+        _world->emitEvent(PositionUpdateEvent(getId(), newPosition.x, newPosition.y));
     }
+    _x = 0;
+    _y = 0;
 }
 
-void PlayerEntity::handleEvent(const Event& event)
+void PlayerEntity::handleEvent(const Event* event)
 {
-    switch (event.type) {
+    switch (event->type) {
+        case EventType::KeyPress: {
+            KeyPressEvent* keyEvent = (KeyPressEvent*)event;
+            switch (keyEvent->keyCode) {
+                case sf::Keyboard::Key::W: {
+                    _y += 100;
+                    break;
+                }
+                case sf::Keyboard::Key::A: {
+                    _x -= 100;
+                    break;
+                }
+                case sf::Keyboard::Key::S: {
+                    _y -= 100;
+                    break;
+                }
+                case sf::Keyboard::Key::D: {
+                    _x += 100;
+                    break;
+                }
+            }
+            break;
+        }
+        case EventType::PositionUpdate: {
+            PositionUpdateEvent* positionEvent = (PositionUpdateEvent*)event;
+            _sprite->setPosition(positionEvent->x, positionEvent->y);
+            break;
+        }
+        default: {
+            printf("PlayerEntity received unexpected event:%s\n", to_string(event->type).data());
+            break;
+        }
     }
 }
 
