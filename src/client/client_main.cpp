@@ -114,6 +114,7 @@ int main(int argc, char** argv) {
         ENetPacket* packet = enet_packet_create("packet", strlen ("packet") + 1, ENET_PACKET_FLAG_RELIABLE);
         enet_peer_send(server, 0, packet);
         
+        // get messages from server - turn them into events and handle them in the game simulation
         while (enet_host_service(client, &enetEvent, 0) > 0) {
             switch (enetEvent.type) {
                 case ENET_EVENT_TYPE_CONNECT:
@@ -128,13 +129,14 @@ int main(int argc, char** argv) {
                     break;
             }
         }
-        
-        
-        
 
         
         window.clear(sf::Color::Black);
         game.onFrame(frameTime.asSeconds());
+        
+        
+        // game onFrame should push events for us to send back to the server here
+        
         window.display();
     }
     game.onShutdown();

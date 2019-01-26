@@ -39,6 +39,7 @@ int main(int argc, char** argv)
     
     std::vector<ENetPeer*> peers;
     
+    // for now, was thinking the server just relays all messages from peer to all other peers
     printf("server is running...\n");
     while (true) {
         ENetEvent event;
@@ -62,7 +63,7 @@ int main(int argc, char** argv)
                             event.packet->data,
                             event.peer->data,
                             event.channelID);
-                                                            
+                    
                     for (ENetPeer* peer : peers) {
                         if (peer != event.peer) {
                             enet_peer_send(peer, 0, event.packet);
