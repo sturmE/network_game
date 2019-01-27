@@ -10,6 +10,17 @@
 #include <vector>
 #include "Event.h"
 
+#include "WorldSocket.hpp"
+
+
+void other()
+{
+    WorldSocket socket;
+    
+    while (true) {
+        socket.processMessageQueue();
+    }
+}
 
 struct PeerData
 {
@@ -20,6 +31,8 @@ struct PeerData
 
 int main(int argc, char** argv)
 {
+    other();
+    
     uint32_t peerIdKey = 1;
     if (enet_initialize () != 0) {
         fprintf (stderr, "An error occurred while initializing ENet.\n");
@@ -28,7 +41,7 @@ int main(int argc, char** argv)
     atexit(enet_deinitialize);
     
     ENetAddress address;
-    ENetHost * server;
+    ENetHost* server;
     address.host = ENET_HOST_ANY;
     address.port = 44951;
     server = enet_host_create (& address /* the address to bind the server host to */,
