@@ -9,16 +9,15 @@
 
 #include <stdint.h>
 #include <vector>
+#include "Bytebuffer.hpp"
 
 enum class MessageType : uint16_t
 {
     // Client Messages
-    Connect         = 1,
-    Disconnect      = 2,
+    Auth            = 1,
     
     // Server Messages
-    BeginSession    = 32768,
-    EndSession      = 32769,
+    AuthResponse    = 32768,
 };
 
 const char* to_string(MessageType type);
@@ -29,25 +28,29 @@ struct Message
     
     const MessageType type;
     
-    template <typename T>
-    static void serialize(const T& msg, std::vector<uint8_t>& buffer)
-    {        
-        buffer.resize(sizeof(T));
-        memcpy(buffer.data(), &msg, sizeof(T));
+    void pack(std::vector<uint8_t>& buffer)
+    {
+        buffer.resize(buffer.size() + sizeof(MessageType));
+        
     }
 };
 
-struct ConnectMsg : public Message
+struct AuthMessage : public Message
 {
-    ConnectMsg() : Message(MessageType::Connect) {}
+    AuthMessage() : Message(MessageType::Auth) {}
 };
 
-struct BeginSession : public Message
+struct AuthResponseMessage : public Message
 {
-    BeginSession() : Message(MessageType::BeginSession) {}
+    AuthResponseMessage() : Message(MessageType::AuthResponse) {}
+    
+    uint64_t sessionId;
+    
+    void pack(std::vector<uint8_t>& buffer)
+    {
+        
+    }
 };
 
-struct EndSession : public Message
-{
-    EndSession() : Message(MessageType::EndSession) {}
-};
+
+

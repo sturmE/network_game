@@ -6,30 +6,37 @@
 //
 
 #include "WorldSession.hpp"
+#include "WorldSocket.hpp"
 #include <enet/enet.h>
 
-WorldSession::WorldSession(ENetPeer* client)
+WorldSession::WorldSession(_ENetPeer* client, WorldSocket* socket)
 : _client(client)
+, _socket(socket)
 {
 }
 
-void WorldSession::queuePacket(WorldPacket&& packet)
+void WorldSession::recvPacket(WorldPacket&& packet)
 {
-    std::lock_guard<std::mutex> lock(_packetQueueMutex);
-    _packetRecvQueue.emplace_back(packet);
+    std::lock_guard<std::mutex> lock(_recvQueueMutex);
+    _recvQueue.emplace_back(packet);
+}
+
+void WorldSession::sendPacket(WorldPacket&& packet)
+{
+    std::lock_guard<std::mutex> lock(_sendQueueMutex);
+    _sendQueue.emplace_back(packet);
 }
 
 void WorldSession::update()
 {
     {
-        std::lock_guard<std::mutex> lock(_packetQueueMutex);
-        _packetProcessQueue = std::move(_packetRecvQueue);
-        _packetRecvQueue.clear();
+        std::lock_guard<std::mutex> lock(_recvQueueMutex);
+        std::swap(_processQueue, _recvQueue);
     }
     
-    for (const WorldPacket& packet : _packetProcessQueue) {
+    for (const WorldPacket& packet : _processQueue) {
         
     }
     
-    _packetProcessQueue.clear();
+    _processQueue.clear();
 }

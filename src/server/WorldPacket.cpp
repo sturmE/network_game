@@ -11,6 +11,12 @@ WorldPacket::WorldPacket(std::vector<uint8_t>&& buffer)
 : _data(buffer)
 {}
 
+WorldPacket::WorldPacket(uint8_t* data, size_t len)
+{
+    _data.resize(len);
+    memcpy(_data.data(), data, len);
+}
+
 WorldPacket::~WorldPacket()
 {}
 
