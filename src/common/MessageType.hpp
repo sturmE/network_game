@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <stdint.h>
+#include <vector>
+
 enum class MessageType : uint16_t
 {
     // Client Messages
@@ -18,11 +21,20 @@ enum class MessageType : uint16_t
     EndSession      = 32769,
 };
 
+const char* to_string(MessageType type);
+
 struct Message
 {
     Message(MessageType type) : type(type) {}
     
-    MessageType type;
+    const MessageType type;
+    
+    template <typename T>
+    static void serialize(const T& msg, std::vector<uint8_t>& buffer)
+    {        
+        buffer.resize(sizeof(T));
+        memcpy(buffer.data(), &msg, sizeof(T));
+    }
 };
 
 struct ConnectMsg : public Message

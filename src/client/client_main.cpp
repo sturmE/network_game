@@ -5,79 +5,16 @@
 //  Created by Eugene Sturm on 1/25/19.
 //
 
-#include <string>
-#include <enet/enet.h>
+#include "Session.hpp"
 
-ENetHost* client;
-ENetPeer* server;
-
-int main(int argc, char** argv) {
-    client = enet_host_create (NULL /* create a client host */,
-                                1 /* only allow 1 outgoing connection */,
-                                2 /* allow up 2 channels to be used, 0 and 1 */,
-                                0 /* assume any amount of incoming bandwidth */,
-                                0 /* assume any amount of incoming bandwidth */);
-    if (client == NULL) {
-        fprintf (stderr, "An error occurred while trying to create an ENet client host.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    ENetAddress address;
-    ENetEvent event;
-
-    // this should be defined by settings json
-    enet_address_set_host(&address, "localhost");
-    address.port = 44951;
-    server = enet_host_connect(client, &address, 2, 0);
-    if (server == NULL) {
-        fprintf(stderr, "No available peers for initiating an ENet connection.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // wait 5 seconds for connection
-    if (enet_host_service(client, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
-        printf("Connection to server succeeded.\n");
-    } else {
-        enet_peer_reset(server);
-        printf("Connection to server failed.\n");
-    }
+int main(int argc, char** argv)
+{
+    Session session;
+    session.connect("localhost", 44951);
     
-    while (enet_host_service(client, &event, 0) > 0) {
-        switch (event.type) {
-            case ENET_EVENT_TYPE_CONNECT: {
-                break;
-            }
-            case ENET_EVENT_TYPE_RECEIVE: {
-                
-                enet_packet_destroy(event.packet);
-                break;
-            }
-            case ENET_EVENT_TYPE_DISCONNECT: {
-                break;
-            }
-            default: {
-                break;
-            }
-        }
+    while (true) {
+        session.update();
     }
-    
-    
-    enet_peer_disconnect(server, 0);
-
-    while (enet_host_service(client, &event, 3000) > 0) {
-        switch (event.type) {
-            case ENET_EVENT_TYPE_RECEIVE:
-                enet_packet_destroy(event.packet);
-                break;
-            case ENET_EVENT_TYPE_DISCONNECT:
-                printf("Disconnection succeeded.");
-                break;
-            default:
-                printf("unhandled event type");
-                break;
-        }
-    }
-    enet_peer_reset(server);
 }
 
 //std::unique_ptr<Game> game;

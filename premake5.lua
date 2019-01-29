@@ -54,6 +54,7 @@ project "dirtycommon"
     files {
         "src/common/**.cpp",
         "src/common/**.h",
+        "src/common/**.hpp",
     }
 
 project "dirtyclient"
@@ -96,6 +97,7 @@ project "dirtyclient"
     files {
         "src/client/**.cpp",
         "src/client/**.h",
+        "src/client/**.hpp",
     }
 
 project "dirtyserver"
@@ -122,4 +124,5 @@ project "dirtyserver"
     files {
         "src/server/**.cpp",
         "src/server/**.h",
+        "src/server/**.hpp",
     }

@@ -12,53 +12,32 @@
 #include <vector>
 #include <memory>
 #include <map>
-#include <enet/enet.h>
-#include "MessageType.hpp"
+#include "WorldPacket.hpp"
 
-class WorldPacket
-{
-private:
-    ENetEvent _event;
-public:
-    WorldPacket(ENetEvent&& event);
-    ~WorldPacket();
-    
-    MessageType messageType() const;
-    ENetPeer* clientInfo() const;
-};
-
-class WorldSession
-{
-private:
-    std::mutex _packetQueueMutex;
-    std::vector<WorldPacket> _packetRecvQueue;
-    std::vector<WorldPacket> _packetProcessQueue;;
-    
-    ENetPeer* _client { nullptr };
-public:
-    WorldSession(ENetPeer* client);
-    
-    void queuePacket(WorldPacket&& packet);
-    void update();
-};
+class WorldSession;
+class WorldSessionManager;
+struct _ENetPeer;
+struct _ENetHost;
+struct _ENetPacket;
 
 class WorldSocket
 {
 private:
     bool _isInitialized { false };
-    ENetHost* _server { nullptr };
+    _ENetHost* _server { nullptr };
     std::thread _listenThread;
     volatile bool _isListenThreadRunning { false };
+        
+    std::map<_ENetPeer*, std::shared_ptr<WorldSession>> _sessions;
     
-    std::mutex _messageQueueMutex;
-    std::vector<WorldPacket> _messageQueue;
-    std::map<ENetPeer*, std::shared_ptr<WorldSession>> _sessions;
+    WorldSessionManager* _sessionManager;
 public:
-    WorldSocket();
+    WorldSocket(WorldSessionManager* sessionManager);
     ~WorldSocket();
     
-    void processMessageQueue();
+    bool start();
 private:
     void listen();
-    bool isValidMessage(ENetPacket* packet);
+    void processMessage(WorldPacket&& msg);
+    bool isValidMessage(_ENetPacket* packet);
 };
