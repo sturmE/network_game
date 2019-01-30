@@ -6,6 +6,7 @@
 //
 
 #include "Session.hpp"
+#include "Bytebuffer.hpp"
 #include <enet/enet.h>
 #include <iostream>
 
@@ -38,8 +39,6 @@ Session::~Session()
         enet_peer_reset(_server);
     }
 }
-
-std::vector<uint8_t> buffer;
 
 bool Session::connect(const std::string& addr, uint16_t port)
 {
@@ -77,10 +76,7 @@ bool Session::connect(const std::string& addr, uint16_t port)
     _isSessionThreadRunning = true;
     _sessionThread = std::thread([this](){ this->listen(); });
     
-    
-    ConnectMsg msg;
-    Message::serialize<ConnectMsg>(msg, buffer);
-    sendMessage(SessionPacket(enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE), false));
+    sendMessage(Packet(AuthMessage()));
     
     return true;
 }
@@ -91,8 +87,10 @@ void Session::listen()
         
         {
             std::lock_guard<std::mutex> lock(_packetSendQueueMutex);
-            for (SessionPacket& packet : _packetSendQueue) {
-                enet_peer_send(_server, 0, packet.packet());
+            for (Packet& packet : _packetSendQueue) {
+                ENetPacket* enetPacket = enet_packet_create(packet.data(), packet.size(), ENET_PACKET_FLAG_RELIABLE);
+                std::cout << "Sending '" << to_string(packet.messageType()) << std::endl;
+                enet_peer_send(_server, 0, enetPacket);
             }
         }
         
@@ -100,8 +98,11 @@ void Session::listen()
         while (enet_host_service(_client, &event, 100) > 0) {
             switch (event.type) {
                 case ENET_EVENT_TYPE_RECEIVE: {
+                    Packet packet(event.packet->data, event.packet->dataLength);
+                    enet_packet_destroy(event.packet);
+                    std::cout << "Received '" << to_string(packet.messageType()) << std::endl;
                     std::lock_guard<std::mutex> lock(_packetRecvQueueMutex);
-                    _packetRecvQueue.emplace_back(std::move(event.packet));
+                    _packetRecvQueue.emplace_back(std::move(packet));
                     break;
                 }
                 default: {
@@ -117,10 +118,16 @@ void Session::listen()
 
 void Session::update()
 {
-    
+//    ChatMessage chatmsg;
+//    chatmsg.contents = "rawrrawrarawr";
+//    
+//    ByteStream bytestream;
+//    chatmsg.pack(bytestream);
+//    
+//    sendMessage(Packet(enet_packet_create(bytestream.data(), bytestream.size(), ENET_PACKET_FLAG_RELIABLE), false));
 }
 
-void Session::sendMessage(SessionPacket&& msg)
+void Session::sendMessage(Packet&& msg)
 {
     std::lock_guard<std::mutex> lock(_packetSendQueueMutex);
     _packetSendQueue.emplace_back(msg);

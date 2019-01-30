@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "SessionPacket.hpp"
+#include "Packet.hpp"
 #include <thread>
 #include <mutex>
 #include <vector>
@@ -25,11 +25,11 @@ private:
     std::thread _sessionThread;
     
     std::mutex _packetRecvQueueMutex;
-    std::vector<SessionPacket> _packetRecvQueue;
-    std::vector<SessionPacket> _packetProcessQueue;
+    std::vector<Packet> _packetRecvQueue;
+    std::vector<Packet> _packetProcessQueue;
     
     std::mutex _packetSendQueueMutex;
-    std::vector<SessionPacket> _packetSendQueue;    
+    std::vector<Packet> _packetSendQueue;
 public:
     Session();
     ~Session();
@@ -37,7 +37,7 @@ public:
     bool connect(const std::string& address, uint16_t port);
     void update();
     
-    void sendMessage(SessionPacket&& packet);
+    void sendMessage(Packet&& packet);
 private:
     void listen();
 };

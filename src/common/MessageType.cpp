@@ -10,10 +10,9 @@
 const char* to_string(MessageType type)
 {
     switch (type) {
-        case MessageType::Connect: return "Connect";
-        case MessageType::Disconnect: return "Disconnect";
-        case MessageType::BeginSession: return "BeginSession";
-        case MessageType::EndSession: return "EndSession";
+        case MessageType::Auth: return "Auth";
+        case MessageType::AuthResponse: return "AuthResponse";
+        case MessageType::Chat: return "Chat";
     }
-    return nullptr;
+    return "[messageType]";
 }

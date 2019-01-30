@@ -13,7 +13,7 @@
 #include <memory>
 #include <map>
 #include <unordered_map>
-#include "WorldPacket.hpp"
+#include "Packet.hpp"
 
 class WorldSession;
 class WorldSessionManager;
@@ -31,19 +31,18 @@ private:
         
     std::map<_ENetPeer*, std::shared_ptr<WorldSession>> _sessions;
     
-    WorldSessionManager* _sessionManager;
-    
     std::mutex _sendQueueMutex;
-    std::unordered_map<_ENetPeer*, std::vector<WorldPacket>> _sendQueue;
-    std::unordered_map<_ENetPeer*, std::vector<WorldPacket>> _processQueue;
+    std::map<WorldSession*, std::vector<Packet>> _sendQueue;
+    
+    WorldSessionManager* _sessionManager;
 public:
     WorldSocket(WorldSessionManager* sessionManager);
     ~WorldSocket();
     
     bool start();
-    void sendPacket(WorldPacket&& packet, _ENetPeer* destination);    
+    void queueSend(Packet&& packet, WorldSession* session);
 private:
     void listen();
-    void processMessage(_ENetPeer* peer, WorldPacket&& msg);
+    void processMessage(_ENetPeer* peer, Packet&& msg);
     bool isValidMessage(_ENetPacket* packet);
 };

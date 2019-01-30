@@ -9,7 +9,7 @@
 
 #include <vector>
 #include <mutex>
-#include "WorldPacket.hpp"
+#include "Packet.hpp"
 
 struct _ENetPeer;
 class WorldSocket;
@@ -17,22 +17,24 @@ class WorldSocket;
 class WorldSession
 {
 private:
-    std::vector<WorldPacket> _processQueue;
+    std::vector<Packet> _processQueue;
     
     std::mutex _sendQueueMutex;
     std::mutex _recvQueueMutex;
-    std::vector<WorldPacket> _sendQueue;
-    std::vector<WorldPacket> _recvQueue;
+    std::vector<Packet> _sendQueue;
+    std::vector<Packet> _recvQueue;
     
     _ENetPeer* _client { nullptr };
     WorldSocket* _socket { nullptr };
 public:
     WorldSession(_ENetPeer* client, WorldSocket* socket);
     
-    void recvPacket(WorldPacket&& packet);
-    void sendPacket(WorldPacket&& packet);
+    void queueRecv(Packet&& packet);
+    void queueSend(Packet&& packet);
     
     void update();
+    
+    _ENetPeer* clientInfo() { return _client; }
 private:
     
     // friend method with world socket for getting at the sendQueue

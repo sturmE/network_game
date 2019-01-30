@@ -15,16 +15,15 @@ WorldSession::WorldSession(_ENetPeer* client, WorldSocket* socket)
 {
 }
 
-void WorldSession::recvPacket(WorldPacket&& packet)
+void WorldSession::queueRecv(Packet&& packet)
 {
     std::lock_guard<std::mutex> lock(_recvQueueMutex);
     _recvQueue.emplace_back(packet);
 }
 
-void WorldSession::sendPacket(WorldPacket&& packet)
+void WorldSession::queueSend(Packet&& packet)
 {
-    std::lock_guard<std::mutex> lock(_sendQueueMutex);
-    _sendQueue.emplace_back(packet);
+    _socket->queueSend(std::move(packet), this);
 }
 
 void WorldSession::update()
@@ -34,9 +33,11 @@ void WorldSession::update()
         std::swap(_processQueue, _recvQueue);
     }
     
-    for (const WorldPacket& packet : _processQueue) {
+    for (const Packet& packet : _processQueue) {
         
     }
     
     _processQueue.clear();
 }
+
+

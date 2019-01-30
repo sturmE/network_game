@@ -17,8 +17,10 @@ enum class MessageType : uint16_t
     Auth            = 1,
     
     // Server Messages
-    AuthResponse    = 32768,
+    AuthResponse         = 32768,
+    Chat,
 };
+
 
 const char* to_string(MessageType type);
 
@@ -28,10 +30,9 @@ struct Message
     
     const MessageType type;
     
-    void pack(std::vector<uint8_t>& buffer)
+    void pack(ByteStream& buffer) const
     {
-        buffer.resize(buffer.size() + sizeof(MessageType));
-        
+        buffer << type;
     }
 };
 
@@ -46,11 +47,27 @@ struct AuthResponseMessage : public Message
     
     uint64_t sessionId;
     
-    void pack(std::vector<uint8_t>& buffer)
+    void pack(ByteStream& buffer) const
     {
-        
+        Message::pack(buffer);
+        buffer << sessionId;
     }
 };
+
+struct ChatMessage : public Message
+{
+    ChatMessage() : Message(MessageType::Chat) {}
+    
+    std::string contents;
+    
+    void pack(ByteStream& buffer) const
+    {
+        Message::pack(buffer);
+        buffer << contents;
+    }
+};
+
+
 
 
 

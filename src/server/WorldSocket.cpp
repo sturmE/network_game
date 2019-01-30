@@ -13,21 +13,6 @@
 #include <array>
 #include "Client.hpp"
 
-std::string getAddressString(uint32_t address)
-{
-    std::array<uint8_t, 4> addrParts {
-        (uint8_t)address,
-        (uint8_t)(address >> 8),
-        (uint8_t)(address >> 16),
-        (uint8_t)(address >> 24),
-    };
-    
-    return std::to_string((uint32_t)addrParts[0])
-    + "." + std::to_string((uint32_t)addrParts[1])
-    + "." + std::to_string((uint32_t)addrParts[2])
-    + "." + std::to_string((uint32_t)addrParts[3]);
-}
-
 WorldSocket::WorldSocket(WorldSessionManager* sessionManager)
 : _sessionManager(sessionManager)
 {}
@@ -70,7 +55,7 @@ bool WorldSocket::start()
     return true;
 }
 
-void WorldSocket::processMessage(ENetPeer* peer, WorldPacket&& msg)
+void WorldSocket::processMessage(ENetPeer* peer, Packet&& msg)
 {
     switch (msg.messageType()) {
         case MessageType::Auth: {
@@ -85,7 +70,7 @@ void WorldSocket::processMessage(ENetPeer* peer, WorldPacket&& msg)
                 AuthResponseMessage authResponse;
                 authResponse.sessionId = 0;                                
                 
-                worldSession->sendPacket(WorldPacket(authResponse));
+                worldSession->queueSend(Packet(authResponse));
             }
             break;
         }
@@ -93,7 +78,7 @@ void WorldSocket::processMessage(ENetPeer* peer, WorldPacket&& msg)
             auto it = _sessions.find(peer);
             if (it != end(_sessions)) {
                 std::shared_ptr<WorldSession>& session = it->second;
-                session->recvPacket(std::move(msg));
+                session->queueRecv(std::move(msg));
             } else {
                 // no session
             }
@@ -102,31 +87,41 @@ void WorldSocket::processMessage(ENetPeer* peer, WorldPacket&& msg)
     }
 }
 
-void WorldSocket::sendPacket(WorldPacket&& packet, ENetPeer* destination)
-{
-    std::lock_guard<std::mutex> lock(_sendQueueMutex);
-    _sendQueue[destination].emplace_back(packet);
-}
 
 bool WorldSocket::isValidMessage(ENetPacket* packet)
 {
     return true;
 }
 
+void WorldSocket::queueSend(Packet&& packet, WorldSession* session)
+{
+    std::lock_guard<std::mutex> lock(_sendQueueMutex);
+    _sendQueue[session].emplace_back(packet);
+}
+
+static void rawr(ENetPacket* packet) {
+    printf("boo\n");
+}
+
 void WorldSocket::listen()
 {
+    std::map<WorldSession*, std::vector<Packet>> sendQueue;
     while (_isListenThreadRunning) {
+        sendQueue.clear();
         {
             std::lock_guard<std::mutex> lock(_sendQueueMutex);
-            std::swap(_processQueue, _sendQueue);
+            sendQueue = std::move(_sendQueue);
+            _sendQueue.clear();
         }
         
-        for (const std::pair<ENetPeer*, std::vector<WorldPacket>>& p : _processQueue) {
-            ENetPeer* dst = p.first;
-            for (const WorldPacket& worldPacket : p.second) {
-                ENetPacket* packet = enet_packet_create(worldPacket.data().data(), worldPacket.data().size(),
+        for (const std::pair<WorldSession*, std::vector<Packet>>& p : sendQueue) {
+            ENetPeer* dst = p.first->clientInfo();
+            for (const Packet& packet : p.second) {
+                std::cout << "Sending '" << to_string(packet.messageType()) << "' to " << dst->address.host << ":" << dst->address.port << std::endl;
+                ENetPacket* enetPacket = enet_packet_create(packet.data(), packet.size(),
                                                         ENET_PACKET_FLAG_RELIABLE | ENET_PACKET_FLAG_NO_ALLOCATE);
-                enet_peer_send(dst, 0, packet);
+                enetPacket->freeCallback = rawr;
+                enet_peer_send(dst, 0, enetPacket);
             }
         }
         
@@ -140,11 +135,14 @@ void WorldSocket::listen()
                 }
                 case ENET_EVENT_TYPE_RECEIVE: {
                     if (isValidMessage(event.packet)) {
-                        WorldPacket packet = WorldPacket(event.packet->data, event.packet->dataLength);
+                        
+                        Packet packet = Packet(event.packet->data, event.packet->dataLength);
                         enet_packet_destroy(event.packet);
                         
                         std::cout << "Received '" << to_string(packet.messageType()) << "' from " << event.peer->address.host << ":" << event.peer->address.port << std::endl;
                         processMessage(event.peer, std::move(packet));
+                    } else {
+                        std::cout << "Dropped packet" << std::endl;
                     }
                     break;
                 }
@@ -157,8 +155,5 @@ void WorldSocket::listen()
                 }
             }
         }
-        
-        // wait to clear _process queue til after the packets have been sent since we are using NO_ALLOCATE flag
-        _processQueue.clear();
     }
 }
