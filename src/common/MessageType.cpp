@@ -13,6 +13,7 @@ const char* to_string(MessageType type)
         case MessageType::Auth: return "Auth";
         case MessageType::AuthResponse: return "AuthResponse";
         case MessageType::Chat: return "Chat";
+        case MessageType::Move: return "Move";
     }
     return "[messageType]";
 }

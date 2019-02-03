@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 #include <vector>
-#include "Bytebuffer.hpp"
+#include "ByteStream.hpp"
 
 enum class MessageType : uint16_t
 {
@@ -19,6 +19,7 @@ enum class MessageType : uint16_t
     // Server Messages
     AuthResponse         = 32768,
     Chat,
+    Move,
 };
 
 
@@ -65,6 +66,22 @@ struct ChatMessage : public Message
         Message::pack(buffer);
         buffer << contents;
     }
+};
+
+enum class MoveType : uint8_t
+{
+    StartMoveUp,
+    StartMoveDown,
+    StartMoveLeft,
+    StartMoveRight,
+};
+
+struct MoveMessage : public Message
+{
+    MoveMessage() : Message(MessageType::Move) {}
+    
+    uint64_t guid;
+    MoveType moveType;    
 };
 
 

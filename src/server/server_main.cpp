@@ -5,22 +5,84 @@
 //  Created by Eugene Sturm on 1/25/19.
 //
 
-#include "World.hpp"
-#include "WorldSocket.hpp"
-#include "WorldSessionManager.hpp"
+#include "Socket.hpp"
+#include "Connection.hpp"
+#include <iostream>
+
 
 int main(int argc, char** argv)
 {
-    WorldSessionManager sessionManager;
-    WorldSocket socket(&sessionManager);
-    World world(&socket, &sessionManager);
+    std::mutex enteringConnectionsMutex;
+    std::vector<ConnectionPtr> enteringConnections;
     
-    if (socket.start() == false) {
-        return EXIT_FAILURE;
-    }
+    std::mutex exitingConnectionsMutex;
+    std::vector<ConnectionPtr> exitingConnections;
+    
+    std::vector<ConnectionPtr> pendingConnections;
+    std::vector<ConnectionPtr> activeConnections;
+    
+    auto eventDelegate = [&](SocketEventType type, ConnectionPtr& connection)
+    {
+        switch (type) {
+            case SocketEventType::PeerConnected: {
+                std::lock_guard<std::mutex> lock(enteringConnectionsMutex);
+                enteringConnections.emplace_back(connection);
+                break;
+            }
+            case SocketEventType::PeerDisconnected: {
+                std::lock_guard<std::mutex> lock(exitingConnectionsMutex);
+                exitingConnections.emplace_back(connection);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    };
+    
+    Socket socket(44951, eventDelegate);
     
     while (true) {
-        world.update(0);
+        {
+            std::lock_guard<std::mutex> lock(enteringConnectionsMutex);
+            pendingConnections.insert(end(pendingConnections), begin(enteringConnections), end(enteringConnections));
+            enteringConnections.clear();
+        }
+        
+        Packet packet;
+        for (auto it = begin(pendingConnections); it != end(pendingConnections);) {
+            auto& connection = *it;
+            
+            bool didAuth = false;
+            std::optional<Packet> dequeueResult;
+            while ( (dequeueResult = connection->dequeueIncoming()).has_value() ) {
+                Packet& packet = dequeueResult.value();
+                
+                const MessageType type = packet.messageType();
+                if (type == MessageType::Auth) {
+                    connection->queueOutgoing(Packet(AuthResponseMessage()));
+                    didAuth = true;
+                    break;
+                } else {
+                    // drop others
+                }
+            }
+            
+            if (didAuth) {
+                it = pendingConnections.erase(it);
+                activeConnections.emplace_back(connection);
+            } else {
+                ++it;
+            }
+        }
+        
+        std::vector<Packet> packets;
+        for (auto& connection : activeConnections) {
+            connection->drainIncomingQueue(&packets);
+            for (Packet& packet : packets) {            
+            }
+        }
+        
     }
 }
 

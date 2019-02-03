@@ -8,10 +8,8 @@
 #pragma once
 
 #include <stdint.h>
-#include <cassert>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 class ByteStream {
 public:
@@ -29,8 +27,14 @@ public:
     ByteStream& operator<<(const std::string& rhs);
     
     template <class T>
+    ByteStream& operator<<(const std::vector<T>& rhs);
+    
+    template <class T>
     ByteStream& operator>>(T& rhs);
     ByteStream& operator>>(std::string& rhs);
+    
+    template <class T>
+    ByteStream& operator>>(std::vector<T>& rhs);
     
     void read(size_t len, uint8_t* data);
     void write(const void* data, size_t size);
@@ -59,9 +63,27 @@ ByteStream& ByteStream::operator<<(const T& rhs)
 }
 
 template <class T>
+ByteStream& ByteStream::operator<<(const std::vector<T>& rhs)
+{
+    size_t size = rhs.size();
+    write(&size, sizeof(size_t));
+    write(rhs.data(), sizeof(T));
+    return *this;
+}
+
+template <class T>
 ByteStream& ByteStream::operator>>(T& rhs)
 {
     rhs = read<T>();
+    return *this;
+}
+
+template <class T>
+ByteStream& ByteStream::operator>>(std::vector<T>& rhs)
+{
+    size_t size = read<size_t>();
+    rhs.resize(size);
+    read(rhs.data(), size * sizeof(T));
     return *this;
 }
 

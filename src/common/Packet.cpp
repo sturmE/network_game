@@ -9,7 +9,12 @@
 
 Packet::Packet(const uint8_t* data, size_t len)
 {
-    _data.write(data, len);
+    write(data, len);
+}
+
+Packet::Packet()
+{
+    
 }
 
 Packet::~Packet()
@@ -17,6 +22,6 @@ Packet::~Packet()
 
 MessageType Packet::messageType() const
 {
-    const MessageType type = *((MessageType*)_data.data());
+    const MessageType type = *((MessageType*)data());
     return type;
 }

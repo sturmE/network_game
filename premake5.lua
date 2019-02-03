@@ -44,9 +44,17 @@ project "dirtycommon"
     language "C++"
     targetdir "bin"
 
-    sysincludedirs {
-    }
 
+    filter "system:macosx"
+       links {
+            "dirtycommon",
+            "enet",
+        }
+
+    sysincludedirs {
+        "external/enet/include",
+    }
+    
     includedirs {
         "src/common/**"
     }
@@ -63,30 +71,13 @@ project "dirtyclient"
     targetdir "bin"
 
     filter "system:macosx"
-       buildoptions {"-F ../external/SFML-2.5.1-macos-clang/Frameworks"}
-       linkoptions  {"-F ../external/SFML-2.5.1-macos-clang/Frameworks"}
-       buildoptions {"-F ../external/SFML-2.5.1-macos-clang/extlibs"}
-       linkoptions  {"-F ../external/SFML-2.5.1-macos-clang/extlibs"}
        links {
             "dirtycommon",
             "enet",
-            "SFML.framework",
-            "sfml-graphics.framework",
-            "sfml-window.framework",
-            "sfml-system.framework",
-            "FLAC.framework",
-            "freetype.framework",
-            "ogg.framework",
-            "OpenAL.framework",
-            "vorbis.framework",
-            "vorbisenc.framework",
-            "vorbisfile.framework",
         }
 
     sysincludedirs {
-        "external/SFML-2.5.1-macos-clang/include",
         "external/enet/include",
-        "external/json/single_include/nlohmann",
     }
 
     includedirs {
@@ -113,7 +104,6 @@ project "dirtyserver"
 
     sysincludedirs {
         "external/enet/include",
-        "external/json/single_include/nlohmann",        
     }
 
     includedirs {

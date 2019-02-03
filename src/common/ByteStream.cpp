@@ -5,11 +5,11 @@
 //  Created by Eugene Sturm on 1/29/19.
 //
 
-#include "Bytebuffer.hpp"
+#include "ByteStream.hpp"
 
 ByteStream::ByteStream()
 {
-    _data.reserve(32);
+    _data.reserve(8);
 }
 
 ByteStream::~ByteStream()
