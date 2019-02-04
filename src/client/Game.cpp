@@ -13,6 +13,9 @@ void Game::initialize(gfx::RenderDevice* device, gfx::Swapchain* swapchain, Conn
     _device = device;
     _swapchain = swapchain;
     _connection = connection;
+    
+    
+
 }
 
 void Game::update(const std::vector<SDL_Event>& systemEvents, const std::vector<Packet>& packets, double dt)
