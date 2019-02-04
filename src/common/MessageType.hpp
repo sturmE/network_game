@@ -58,6 +58,7 @@ struct AuthResponseMessage : public Message
 struct ChatMessage : public Message
 {
     ChatMessage() : Message(MessageType::Chat) {}
+    ChatMessage(std::string&& contents) : Message(MessageType::Chat), contents(std::move(contents)) {}
     
     std::string contents;
     

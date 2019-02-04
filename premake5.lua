@@ -37,6 +37,7 @@ workspace "dirty"
 
     group "external"
         include "external/enet.lua"
+        include "external/sdl2.lua"
     group ""
 
 project "dirtycommon"
@@ -65,6 +66,7 @@ project "dirtycommon"
         "src/common/**.hpp",
     }
 
+
 project "dirtyclient"
     kind "ConsoleApp"
     language "C++"
@@ -74,10 +76,12 @@ project "dirtyclient"
        links {
             "dirtycommon",
             "enet",
+            "SDL2",
         }
 
     sysincludedirs {
         "external/enet/include",
+        "external/SDL-mirror/include"
     }
 
     includedirs {
@@ -104,6 +108,7 @@ project "dirtyserver"
 
     sysincludedirs {
         "external/enet/include",
+        "external/sqlite3pp/headeronly_src",
     }
 
     includedirs {

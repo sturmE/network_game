@@ -13,6 +13,7 @@
 #include "Packet.hpp"
 #include <thread>
 #include <map>
+#include <unordered_map>
 #include <mutex>
 
 class Connection;
@@ -42,12 +43,15 @@ private:
     
     std::vector<ConnectionPtr> _activeConnections;
     
+    std::unordered_map<ConnectionPtr, std::mutex> _connectionMutexes;
+    std::unordered_map<ConnectionPtr, std::vector<Packet>> _incomingQueue;
+    std::unordered_map<ConnectionPtr, std::vector<Packet>> _outgoingQueues;
 public:
     Socket(SocketEventDelegate&& socketEventDelegate = SocketEventDelegate());
     Socket(uint64_t listenPort, SocketEventDelegate&& socketEventDelegate = SocketEventDelegate());
     ~Socket();
     
-    std::shared_ptr<Connection> connect(const std::string& addr, uint16_t port);
+    std::shared_ptr<Connection> connect(const std::string& addr, uint16_t port);    
 private:
     void serviceSocket();
 };

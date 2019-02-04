@@ -14,9 +14,19 @@ Connection::Connection(ENetPeer* peer, Socket* socket)
 , _socket(socket)
 {}
 
+void Connection::waitForConnectionState(ConnectionState state)
+{
+    std::unique_lock<std::mutex> lck(_connectionStateMutex);
+    while (_state != state) {
+        _connectionStateCondition.wait(lck);
+    }
+}
+
 void Connection::setConnectionState(ConnectionState state)
 {
+    std::lock_guard<std::mutex> lock(_connectionStateMutex);
     _state = state;
+    _connectionStateCondition.notify_one();
 }
 
 Connection::~Connection()

@@ -78,8 +78,7 @@ std::shared_ptr<Connection> Socket::connect(const std::string& addr, uint16_t po
 
 void Socket::serviceSocket()
 {
-    while (_isServiceThreadRunning) {
-        
+    while (_isServiceThreadRunning) {                        
         for (auto& connection : _activeConnections) {
             uint32_t sendCount = connection->flushOutgoingQueue();
             if (sendCount > 0) {

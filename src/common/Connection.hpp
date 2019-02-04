@@ -14,6 +14,7 @@
 #include <condition_variable>
 #include "Packet.hpp"
 #include <optional>
+#include <array>
 
 class _ENetPeer;
 class Socket;
@@ -30,7 +31,7 @@ class Connection
 private:
     _ENetPeer* _peer { nullptr };
     Socket* _socket { nullptr };
-    std::atomic<ConnectionState> _state { ConnectionState::Disconnected };
+    ConnectionState _state { ConnectionState::Disconnected };
     
     std::mutex _sendQueueMutex;
     std::vector<Packet> _sendQueue;
@@ -39,6 +40,9 @@ private:
     std::deque<Packet> _incomingQueue;
     
     std::condition_variable _incomingCondition;
+    
+    std::mutex _connectionStateMutex;
+    std::condition_variable _connectionStateCondition;
 public:
     Connection(_ENetPeer* peer, Socket* socket);
     ~Connection();
@@ -52,11 +56,12 @@ public:
     Packet waitForIncoming();
     
     void drainIncomingQueue(std::vector<Packet>* output);
-    
     uint32_t flushOutgoingQueue();
     
     _ENetPeer* peerInfo() const { return _peer; }
     ConnectionState connectionState() const { return _state; }
+    
+    void waitForConnectionState(ConnectionState state);
 protected:
     void setConnectionState(ConnectionState state);
     

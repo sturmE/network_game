@@ -8,10 +8,15 @@
 #include "Socket.hpp"
 #include "Connection.hpp"
 #include <iostream>
+#include "World.hpp"
+#include "Session.hpp"
+#include "DatabaseManager.hpp"
 
 
 int main(int argc, char** argv)
 {
+    DatabaseManager dbm;
+    
     std::mutex enteringConnectionsMutex;
     std::vector<ConnectionPtr> enteringConnections;
     
@@ -26,7 +31,7 @@ int main(int argc, char** argv)
         switch (type) {
             case SocketEventType::PeerConnected: {
                 std::lock_guard<std::mutex> lock(enteringConnectionsMutex);
-                enteringConnections.emplace_back(connection);
+                enteringConnections.emplace_back(connection);                
                 break;
             }
             case SocketEventType::PeerDisconnected: {
@@ -41,6 +46,7 @@ int main(int argc, char** argv)
     };
     
     Socket socket(44951, eventDelegate);
+    World world;
     
     while (true) {
         {
@@ -64,6 +70,7 @@ int main(int argc, char** argv)
                     didAuth = true;
                     break;
                 } else {
+                    std::cout << "dropping " << to_string(type) << std::endl;
                     // drop others
                 }
             }
@@ -71,18 +78,14 @@ int main(int argc, char** argv)
             if (didAuth) {
                 it = pendingConnections.erase(it);
                 activeConnections.emplace_back(connection);
+                world.addSession(std::make_shared<Session>(connection));
             } else {
                 ++it;
             }
         }
         
-        std::vector<Packet> packets;
-        for (auto& connection : activeConnections) {
-            connection->drainIncomingQueue(&packets);
-            for (Packet& packet : packets) {            
-            }
-        }
-        
+        world.update();
+                
     }
 }
 
