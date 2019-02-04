@@ -9,6 +9,7 @@
 #include "Connection.hpp"
 #include <iostream>
 #include <SDL.h>
+#include "Game.hpp"
 
 int main(int argc, char** argv)
 {
@@ -24,31 +25,6 @@ int main(int argc, char** argv)
     if (window == NULL) {
         std::cout << "SDL could not create window:" << SDL_GetError();
         return EXIT_FAILURE;
-    }
-        
-    SDL_Event e;
-    bool shouldQuit = false;
-    while (shouldQuit == false) {
-        while (SDL_PollEvent(&e) != 0) {
-            switch (e.type) {
-                case SDL_QUIT: {
-                    shouldQuit = true;
-                    break;
-                }
-                case SDL_WINDOWEVENT: {
-                    break;
-                }
-                case SDL_KEYDOWN:
-                case SDL_KEYUP:
-                case SDL_MOUSEMOTION:
-                case SDL_MOUSEBUTTONDOWN:
-                case SDL_CONTROLLERBUTTONDOWN:
-                case SDL_CONTROLLERBUTTONUP:
-                case SDL_CONTROLLERAXISMOTION: {
-                    break;
-                }
-            }
-        }
     }
     
     Socket socket;
@@ -66,17 +42,52 @@ int main(int argc, char** argv)
     
     std::cout << "Authed\n";
     
-    connection->queueOutgoing(Packet(ChatMessage("Hi, rawr")));
+    Game game;
+    game.initialize(connection);
     
-    while (true) {
-        std::optional<Packet> packetResult;
-        while ( (packetResult = connection->dequeueIncoming()).has_value() ) {
-            Packet& packet = packetResult.value();
-            
-            std::cout << "Received " << to_string(packet.messageType()) << std::endl;
+    bool shouldQuit = false;
+    std::vector<SDL_Event> events;
+    std::vector<Packet> packets;
+    double dt = 0;
+    while (shouldQuit == false) {
+        events.clear();
+        packets.clear();
+        
+        SDL_Event e;
+        while (SDL_PollEvent(&e) != 0) {
+            if (e.type == SDL_QUIT) {
+                shouldQuit = true;
+                break;
+            }
+            events.emplace_back(std::move(e));
         }
+        
+        connection->drainIncomingQueue(&packets);
+        game.update(events, packets, dt);
     }
+    
+    game.shutdown();
     
     SDL_DestroyWindow(window);
     return EXIT_SUCCESS;
 }
+
+
+//switch (e.type) {
+//    case SDL_QUIT: {
+//        shouldQuit = true;
+//        break;
+//    }
+//    case SDL_WINDOWEVENT: {
+//        break;
+//    }
+//    case SDL_KEYDOWN:
+//    case SDL_KEYUP:
+//    case SDL_MOUSEMOTION:
+//    case SDL_MOUSEBUTTONDOWN:
+//    case SDL_CONTROLLERBUTTONDOWN:
+//    case SDL_CONTROLLERBUTTONUP:
+//    case SDL_CONTROLLERAXISMOTION: {
+//        break;
+//    }
+//}
