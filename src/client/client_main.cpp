@@ -9,7 +9,12 @@
 #include "Connection.hpp"
 #include <iostream>
 #include <SDL.h>
+#import <SDL_syswm.h>
 #include "Game.hpp"
+#include <MetalBackend.h>
+#include <RenderBackend.h>
+#include <RenderDevice.h>
+
 
 int main(int argc, char** argv)
 {
@@ -27,6 +32,21 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
     
+    gfx::RenderBackend* renderBackend = new gfx::MetalBackend();
+    gfx::RenderDevice* device = renderBackend->getRenderDevice();
+    
+    SDL_SysWMinfo info;
+    SDL_VERSION(&info.version);
+    SDL_GetWindowWMInfo(window, &info);
+    NSWindow* nsWindow = (NSWindow*)info.info.cocoa.window;
+    
+    gfx::SwapchainDesc swapchainDesc;
+    swapchainDesc.format = gfx::PixelFormat::BGRA8Unorm;
+    swapchainDesc.height = windowWidth;
+    swapchainDesc.width = windowHeight;
+    
+    gfx::Swapchain* swapchain = renderBackend->createSwapchainForWindow(swapchainDesc, device, (void*)nsWindow);
+                                        
     Socket socket;
     ConnectionPtr connection = socket.connect("localhost", 44951);
     
@@ -43,7 +63,7 @@ int main(int argc, char** argv)
     std::cout << "Authed\n";
     
     Game game;
-    game.initialize(connection);
+    game.initialize(device, swapchain, connection);
     
     bool shouldQuit = false;
     std::vector<SDL_Event> events;

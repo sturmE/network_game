@@ -38,6 +38,7 @@ workspace "dirty"
     group "external"
         include "external/enet.lua"
         include "external/sdl2.lua"
+        include "external/gfx.lua"
     group ""
 
 project "dirtycommon"
@@ -77,17 +78,27 @@ project "dirtyclient"
             "dirtycommon",
             "enet",
             "SDL2",
+            "RenderBackend",
         }
 
     sysincludedirs {
         "external/enet/include",
-        "external/SDL-mirror/include"
+        "external/SDL-mirror/include",
+        "external/gfx/src/**"
+
     }
 
     includedirs {
         "src/common",
         "src/client/**"
     }
+
+    buildoptions { "-x objective-c++"}
+        links { 
+            "Metal.framework",
+            "QuartzCore.framework",
+            "Cocoa.framework",
+        }
 
     files {
         "src/client/**.cpp",

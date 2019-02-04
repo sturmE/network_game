@@ -4,3 +4,6 @@
 [submodule "external/SDL-mirror"]
 	path = external/SDL-mirror
 	url = https://github.com/spurious/SDL-mirror
+[submodule "external/gfx"]
+	path = external/gfx
+	url = https://github.com/dirtystudios/gfx.git

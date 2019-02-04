@@ -8,8 +8,10 @@
 #include "Game.hpp"
 #include "Connection.hpp"
 
-void Game::initialize(ConnectionPtr& connection)
+void Game::initialize(gfx::RenderDevice* device, gfx::Swapchain* swapchain, ConnectionPtr& connection)
 {
+    _device = device;
+    _swapchain = swapchain;
     _connection = connection;
 }
 
