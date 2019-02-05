@@ -27,5 +27,6 @@ public:
     void processIncoming();
     void sendPacket(Packet&& packet);
 protected:
-    void handleChatMessage(const Packet& packet);
+    void handleChatMessage(Packet& packet);
+    void handleLoginMessage(Packet& packet);
 };

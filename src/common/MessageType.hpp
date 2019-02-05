@@ -15,9 +15,11 @@ enum class MessageType : uint16_t
 {
     // Client Messages
     Auth            = 1,
+    Login,
     
     // Server Messages
     AuthResponse         = 32768,
+    LoginResponse,
     Chat,
     Move,
 };
@@ -35,6 +37,21 @@ struct Message
     {
         buffer << type;
     }
+};
+
+struct LoginMessage : public Message
+{
+    LoginMessage() : Message(MessageType::Login) {}
+    
+    std::string name;
+};
+
+
+struct LoginResponseMessage : public Message
+{
+    LoginResponseMessage() : Message(MessageType::LoginResponse) {}
+    
+    float position[3];
 };
 
 struct AuthMessage : public Message

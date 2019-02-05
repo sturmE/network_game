@@ -24,9 +24,14 @@ void Session::processIncoming()
     std::optional<Packet> packetResult;
     while ((packetResult = _connection->dequeueIncoming()).has_value()) {
         Packet& packet = packetResult.value();
-        const MessageType type = packet.messageType();
+        const MessageType type = packet.read<MessageType>();
+        
         
         switch (type) {
+            case MessageType::Login: {
+                handleLoginMessage(packet);
+                break;
+            }
             case MessageType::Chat: {
                 handleChatMessage(packet);
                 break;
@@ -41,7 +46,30 @@ void Session::processIncoming()
     }
 }
 
-void Session::handleChatMessage(const Packet& packet)
+void Session::handleLoginMessage(Packet& packet)
+{
+    std::string name;
+    packet >> name;
+    
+    const bool exists = false;
+    
+    
+    
+    float position[3] = {0, 0, 0};
+    if (exists) {
+        
+    } else {
+        
+    }
+    
+    Packet response;
+    response << MessageType::LoginResponse;
+    response.write(position, sizeof(float) * 3);
+    
+    sendPacket(std::move(response));
+}
+
+void Session::handleChatMessage(Packet& packet)
 {
     Packet copy = packet;
     _world->broadcastPacket(std::move(copy));
