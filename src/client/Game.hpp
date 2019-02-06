@@ -23,6 +23,8 @@ private:
     ConnectionPtr _connection { nullptr };
     gfx::RenderDevice* _device { nullptr };
     gfx::Swapchain* _swapchain { nullptr };
+    
+    gfx::RenderPassId _renderPassId { gfx::NULL_ID };
 public:
     void initialize(gfx::RenderDevice* device, gfx::Swapchain* swapchain, ConnectionPtr& connection);
     void update(const std::vector<SDL_Event>& systemEvents, const std::vector<Packet>& packets, double dt);

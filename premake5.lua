@@ -119,7 +119,7 @@ project "dirtyserver"
 
     sysincludedirs {
         "external/enet/include",
-        "external/sqlite3pp/headeronly_src",
+        "external/rapidjson/include",
     }
 
     includedirs {

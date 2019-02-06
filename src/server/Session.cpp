@@ -37,6 +37,7 @@ void Session::processIncoming()
                 break;
             }
             case MessageType::Move: {
+                handleMoveMessage(packet);
                 break;
             }
             default: {
@@ -46,26 +47,26 @@ void Session::processIncoming()
     }
 }
 
+void Session::handleMoveMessage(Packet& packet)
+{
+    
+}
+
 void Session::handleLoginMessage(Packet& packet)
 {
     std::string name;
     packet >> name;
     
-    const bool exists = false;
-    
-    
-    
-    float position[3] = {0, 0, 0};
-    if (exists) {
-        
-    } else {
-        
+    PlayerCreateInfo createInfo;
+    if (_world->services()->characterDatabase()->loadPlayer(name, &createInfo) == false) {
+        createInfo.position[0] = 0;
+        createInfo.position[1] = 0;
+        createInfo.position[2] = 0;
     }
     
     Packet response;
     response << MessageType::LoginResponse;
-    response.write(position, sizeof(float) * 3);
-    
+    response.write(createInfo.position, sizeof(float) * 3);
     sendPacket(std::move(response));
 }
 

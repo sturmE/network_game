@@ -16,7 +16,7 @@ ByteStream::~ByteStream()
 {}
 
 
-ByteStream& ByteStream::operator>>(std::string& rhs)
+const ByteStream& ByteStream::operator>>(std::string& rhs) const
 {
     rhs.clear();
     while (_rpos < _wpos) {
@@ -36,7 +36,7 @@ ByteStream& ByteStream::operator<<(const std::string& rhs)
     return *this;
 }
 
-void ByteStream::read(size_t len, uint8_t* data) {
+void ByteStream::read(size_t len, uint8_t* data) const {
     assert(_rpos + len <= _wpos);
     assert(data);
     memcpy(data, _data.data() + _rpos, len);

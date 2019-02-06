@@ -24,6 +24,16 @@ enum class MessageType : uint16_t
     Move,
 };
 
+enum class ServerMessageType : uint8_t
+{
+    
+};
+
+enum class ClientMessageType : uint8_t
+{
+    
+};
+
 
 const char* to_string(MessageType type);
 
@@ -42,8 +52,15 @@ struct Message
 struct LoginMessage : public Message
 {
     LoginMessage() : Message(MessageType::Login) {}
+    LoginMessage(std::string&& name) : Message(MessageType::Login), name(name) {}
     
     std::string name;
+    
+    void pack(ByteStream& buffer) const
+    {
+        Message::pack(buffer);
+        buffer << name;
+    }
 };
 
 

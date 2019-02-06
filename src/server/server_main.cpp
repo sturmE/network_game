@@ -10,12 +10,10 @@
 #include <iostream>
 #include "World.hpp"
 #include "Session.hpp"
-#include "DatabaseManager.hpp"
 
 
 int main(int argc, char** argv)
 {
-    DatabaseManager dbm;
     
     std::mutex enteringConnectionsMutex;
     std::vector<ConnectionPtr> enteringConnections;

@@ -61,6 +61,15 @@ int main(int argc, char** argv)
     
     std::cout << "Authed\n";
     
+    connection->queueOutgoing(Packet(LoginMessage("sturm")));
+    
+    while ( (incoming = connection->waitForIncoming()).messageType() != MessageType::LoginResponse) {
+        std::cout << to_string(incoming.messageType()) << std::endl;
+    }
+    
+    std::cout << "Logged in\n";
+    
+    
     Game game;
     game.initialize(device, swapchain, connection);
     

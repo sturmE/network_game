@@ -16,7 +16,7 @@ public:
 private:    
     std::vector<uint8_t> _data;
     size_t _wpos{0};
-    size_t _rpos{0};
+    mutable size_t _rpos{0};
     
 public:
     ByteStream();
@@ -30,17 +30,17 @@ public:
     ByteStream& operator<<(const std::vector<T>& rhs);
     
     template <class T>
-    ByteStream& operator>>(T& rhs);
-    ByteStream& operator>>(std::string& rhs);
+    const ByteStream& operator>>(T& rhs) const;
+    const ByteStream& operator>>(std::string& rhs) const;
     
     template <class T>
-    ByteStream& operator>>(std::vector<T>& rhs);
+    const ByteStream& operator>>(std::vector<T>& rhs) const;
     
-    void read(size_t len, uint8_t* data);
+    void read(size_t len, uint8_t* data) const;
     void write(const void* data, size_t size);
     
     template <class T>
-    T read();
+    T read() const;
     
     void reset();
     
@@ -72,14 +72,14 @@ ByteStream& ByteStream::operator<<(const std::vector<T>& rhs)
 }
 
 template <class T>
-ByteStream& ByteStream::operator>>(T& rhs)
+const ByteStream& ByteStream::operator>>(T& rhs) const
 {
     rhs = read<T>();
     return *this;
 }
 
 template <class T>
-ByteStream& ByteStream::operator>>(std::vector<T>& rhs)
+const ByteStream& ByteStream::operator>>(std::vector<T>& rhs) const
 {
     size_t size = read<size_t>();
     rhs.resize(size);
@@ -88,7 +88,7 @@ ByteStream& ByteStream::operator>>(std::vector<T>& rhs)
 }
 
 template <class T>
-T ByteStream::read()
+T ByteStream::read() const
 {
     T val;
     read(sizeof(T), reinterpret_cast<uint8_t*>(&val));

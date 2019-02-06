@@ -29,4 +29,5 @@ public:
 protected:
     void handleChatMessage(Packet& packet);
     void handleLoginMessage(Packet& packet);
+    void handleMoveMessage(Packet& packet);
 };

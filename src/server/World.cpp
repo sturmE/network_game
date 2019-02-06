@@ -7,6 +7,15 @@
 
 #include "World.hpp"
 #include "Session.hpp"
+#include "WorldServices.hpp"
+#include "CharacterDatabase.hpp"
+
+World::World()
+: _services(new WorldServices())
+, _charDb(new CharacterDatabase())
+{
+    _services->setCharacterDatabase(_charDb.get());
+}
 
 void World::addSession(const SessionPtr& session)
 {
