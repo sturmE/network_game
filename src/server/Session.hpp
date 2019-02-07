@@ -24,8 +24,8 @@ public:
     
     void setWorld(World* world);
     
-    void processIncoming();
-    void sendPacket(Packet&& packet);
+    void processIncoming();    
+    void sendPacket(Packet packet);
 protected:
     void handleChatMessage(Packet& packet);
     void handleLoginMessage(Packet& packet);

@@ -7,8 +7,10 @@
 
 #include "Player.hpp"
 
-Player::Player(const PlayerCreateInfo& creatInfo, Session* session)
-: _session(session)
+Player::Player(const PlayerCreateInfo& createInfo, Session* session)
+: Entity(createInfo.guid)
+, _session(session)
+, _position(createInfo.position)
 {
     
 }

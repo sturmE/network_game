@@ -11,6 +11,7 @@
 #include "Packet.hpp"
 #include "WorldServices.hpp"
 #include "CharacterDatabase.hpp"
+#include "Map.hpp"
 
 class Session;
 using SessionPtr = std::shared_ptr<Session>;
@@ -21,6 +22,7 @@ private:
     std::vector<SessionPtr> _sessions;
     std::unique_ptr<WorldServices> _services;
     std::unique_ptr<CharacterDatabase> _charDb;
+    std::unique_ptr<Map> _map;
 public:
     World();
     
@@ -31,4 +33,5 @@ public:
     void broadcastPacket(Packet&& packet);
     
     WorldServices* services() { return _services.get(); }
+    Map* map() { return _map.get(); }
 };

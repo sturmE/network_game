@@ -31,13 +31,14 @@ void Game::update(const std::vector<SDL_Event>& systemEvents, const std::vector<
 {
     for (const Packet& packet : packets) {
         const MessageType type = packet.read<MessageType>();
+        
+        std::cout << "Recv:" << to_string(type) << std::endl;
+        
         switch (type) {
             case MessageType::LoginResponse: {
-                
                 break;
             }
-            default: {
-                std::cout << "unexpected:" << to_string(type) << std::endl;
+            default: {     
                 break;
             }
         }
@@ -45,18 +46,18 @@ void Game::update(const std::vector<SDL_Event>& systemEvents, const std::vector<
     
     
     
-    gfx::TextureId backbuffer = _swapchain->begin();
-    
-    gfx::FrameBuffer frameBuffer;
-    frameBuffer.setColorAttachment(backbuffer, 0);
-    
-    gfx::CommandBuffer* commandBuffer = _device->CreateCommandBuffer();
-    gfx::RenderPassCommandBuffer* renderPassCommandBuffer = commandBuffer->beginRenderPass(_renderPassId, frameBuffer, "rawr");
-    
-    commandBuffer->endRenderPass(renderPassCommandBuffer);
-    _device->Submit({commandBuffer});
-    
-    _swapchain->present(backbuffer);
+//    gfx::TextureId backbuffer = _swapchain->begin();
+//
+//    gfx::FrameBuffer frameBuffer;
+//    frameBuffer.setColorAttachment(backbuffer, 0);
+//
+//    gfx::CommandBuffer* commandBuffer = _device->CreateCommandBuffer();
+//    gfx::RenderPassCommandBuffer* renderPassCommandBuffer = commandBuffer->beginRenderPass(_renderPassId, frameBuffer, "rawr");
+//
+//    commandBuffer->endRenderPass(renderPassCommandBuffer);
+//    _device->Submit({commandBuffer});
+//
+//    _swapchain->present(backbuffer);
     
 }
 

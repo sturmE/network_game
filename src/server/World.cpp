@@ -15,6 +15,7 @@ World::World()
 , _charDb(new CharacterDatabase())
 {
     _services->setCharacterDatabase(_charDb.get());
+    _map.reset(new Map());
 }
 
 void World::addSession(const SessionPtr& session)

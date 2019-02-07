@@ -22,6 +22,7 @@ enum class MessageType : uint16_t
     LoginResponse,
     Chat,
     Move,
+    CreateObject,
 };
 
 enum class ServerMessageType : uint8_t

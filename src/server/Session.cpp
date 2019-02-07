@@ -62,12 +62,16 @@ void Session::handleLoginMessage(Packet& packet)
         createInfo.position[0] = 0;
         createInfo.position[1] = 0;
         createInfo.position[2] = 0;
+        createInfo.guid = std::hash<std::string>()(name);
     }
     
     Packet response;
     response << MessageType::LoginResponse;
-    response.write(createInfo.position, sizeof(float) * 3);
+    response.write(createInfo.position.data(), sizeof(float) * 3);
     sendPacket(std::move(response));
+    
+    Player* player = new Player(createInfo, this);
+    _world->map()->addPlayer(player);
 }
 
 void Session::handleChatMessage(Packet& packet)
@@ -76,7 +80,7 @@ void Session::handleChatMessage(Packet& packet)
     _world->broadcastPacket(std::move(copy));
 }
 
-void Session::sendPacket(Packet&& packet)
+void Session::sendPacket(Packet packet)
 {
     _connection->queueOutgoing(std::move(packet));
 }

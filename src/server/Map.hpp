@@ -8,6 +8,7 @@
 #pragma once
 
 #include <set>
+#include "Packet.hpp"
 
 class Player;
 
@@ -19,4 +20,5 @@ public:
     Map();
     
     void addPlayer(Player* player);
+    void broadcastPacket(const Packet& packet, std::function<bool(Player*)> exclusionPredicate);
 };
