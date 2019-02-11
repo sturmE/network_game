@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <array>
 #include "ByteStream.hpp"
 
 enum class MessageType : uint16_t
@@ -69,7 +70,7 @@ struct LoginResponseMessage : public Message
 {
     LoginResponseMessage() : Message(MessageType::LoginResponse) {}
     
-    float position[3];
+    std::array<float, 3> position;
 };
 
 struct AuthMessage : public Message

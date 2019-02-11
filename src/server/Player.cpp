@@ -11,6 +11,7 @@ Player::Player(const PlayerCreateInfo& createInfo, Session* session)
 : Entity(createInfo.guid)
 , _session(session)
 , _position(createInfo.position)
+, _name(createInfo.name)
 {
     
 }

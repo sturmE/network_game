@@ -10,10 +10,11 @@
 #include <iostream>
 #include "World.hpp"
 #include "Session.hpp"
-
+#include "Database.hpp"
 
 int main(int argc, char** argv)
 {
+    Database db;
     
     std::mutex enteringConnectionsMutex;
     std::vector<ConnectionPtr> enteringConnections;

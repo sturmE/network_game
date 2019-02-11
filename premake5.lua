@@ -115,11 +115,13 @@ project "dirtyserver"
        links {
             "dirtycommon",
             "enet",
+            "sqlite3",
         }
 
     sysincludedirs {
         "external/enet/include",
         "external/rapidjson/include",
+        "external/sqlite3pp/headeronly_src/"
     }
 
     includedirs {

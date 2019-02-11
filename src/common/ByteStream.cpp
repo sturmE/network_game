@@ -36,7 +36,7 @@ ByteStream& ByteStream::operator<<(const std::string& rhs)
     return *this;
 }
 
-void ByteStream::read(size_t len, uint8_t* data) const {
+void ByteStream::read(void* data, size_t len) const {
     assert(_rpos + len <= _wpos);
     assert(data);
     memcpy(data, _data.data() + _rpos, len);

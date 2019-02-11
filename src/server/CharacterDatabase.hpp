@@ -9,18 +9,19 @@
 
 #include <string>
 #include "Player.hpp"
-#include <rapidjson/document.h>
+
+class Database;
 
 class CharacterDatabase
 {
 private:
-    rapidjson::Document _json;
+    std::shared_ptr<Database> _db { nullptr };
 public:
-    CharacterDatabase();
+    CharacterDatabase(const std::shared_ptr<Database>& db);
     ~CharacterDatabase();
     
-    bool loadPlayer(const std::string& name, PlayerCreateInfo* infoOut);
-private:
-    void save();
+    bool loadPlayer(uint64_t guid, PlayerCreateInfo* infoOut);
+    bool savePlayer(Player* player);
+private:    
 };
 

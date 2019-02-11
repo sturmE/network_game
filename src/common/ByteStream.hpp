@@ -36,7 +36,7 @@ public:
     template <class T>
     const ByteStream& operator>>(std::vector<T>& rhs) const;
     
-    void read(size_t len, uint8_t* data) const;
+    void read(void* data, size_t len) const;
     void write(const void* data, size_t size);
     
     template <class T>
@@ -91,6 +91,6 @@ template <class T>
 T ByteStream::read() const
 {
     T val;
-    read(sizeof(T), reinterpret_cast<uint8_t*>(&val));
+    read(&val, sizeof(T));
     return val;
 }

@@ -69,6 +69,9 @@ int main(int argc, char** argv)
     
     std::cout << "Logged in\n";
     
+    std::array<float, 3> position;
+    incoming.read(position.data(), sizeof(float) * 3);
+    
     
     Game game;
     game.initialize(device, swapchain, connection);

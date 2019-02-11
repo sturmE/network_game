@@ -57,12 +57,14 @@ void Session::handleLoginMessage(Packet& packet)
     std::string name;
     packet >> name;
     
+    uint64_t guid = std::hash<std::string>()(name);
+    
     PlayerCreateInfo createInfo;
-    if (_world->services()->characterDatabase()->loadPlayer(name, &createInfo) == false) {
+    if (_world->services()->characterDatabase()->loadPlayer(guid, &createInfo) == false) {
         createInfo.position[0] = 0;
         createInfo.position[1] = 0;
         createInfo.position[2] = 0;
-        createInfo.guid = std::hash<std::string>()(name);
+        createInfo.guid = guid;
     }
     
     Packet response;
@@ -71,6 +73,7 @@ void Session::handleLoginMessage(Packet& packet)
     sendPacket(std::move(response));
     
     Player* player = new Player(createInfo, this);
+    _world->services()->characterDatabase()->savePlayer(player);
     _world->map()->addPlayer(player);
 }
 

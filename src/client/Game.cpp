@@ -38,7 +38,19 @@ void Game::update(const std::vector<SDL_Event>& systemEvents, const std::vector<
             case MessageType::LoginResponse: {
                 break;
             }
+            case MessageType::CreateObject: {
+                break;
+            }
             default: {     
+                break;
+            }
+        }
+    }
+    
+    for (const SDL_Event& event : systemEvents) {
+        switch (event.type) {
+            case SDL_WINDOWEVENT: {
+                std::cout << event.window.type << std::endl;
                 break;
             }
         }
@@ -46,8 +58,8 @@ void Game::update(const std::vector<SDL_Event>& systemEvents, const std::vector<
     
     
     
-//    gfx::TextureId backbuffer = _swapchain->begin();
-//
+    gfx::TextureId backbuffer = _swapchain->begin();
+
 //    gfx::FrameBuffer frameBuffer;
 //    frameBuffer.setColorAttachment(backbuffer, 0);
 //
@@ -56,8 +68,8 @@ void Game::update(const std::vector<SDL_Event>& systemEvents, const std::vector<
 //
 //    commandBuffer->endRenderPass(renderPassCommandBuffer);
 //    _device->Submit({commandBuffer});
-//
-//    _swapchain->present(backbuffer);
+
+    _swapchain->present(backbuffer);
     
 }
 
