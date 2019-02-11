@@ -14,7 +14,7 @@
 
 int main(int argc, char** argv)
 {
-    Database db;
+    std::shared_ptr<Database> db(new Database());
     
     std::mutex enteringConnectionsMutex;
     std::vector<ConnectionPtr> enteringConnections;
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     };
     
     Socket socket(44951, eventDelegate);
-    World world;
+    World world(db);
     
     while (true) {
         {

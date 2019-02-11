@@ -10,11 +10,13 @@
 #include "WorldServices.hpp"
 #include "CharacterDatabase.hpp"
 
-World::World()
+World::World(const DatabasePtr& db)
 : _services(new WorldServices())
-, _charDb(new CharacterDatabase())
+, _db(db)
+, _charDb(new CharacterDatabase(_db))
 {
     _services->setCharacterDatabase(_charDb.get());
+    _guidProvider.reset(new GuidProvider(_charDb->getMaxGuid()));
     _map.reset(new Map());
 }
 

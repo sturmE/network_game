@@ -22,6 +22,8 @@ public:
     
     bool loadPlayer(uint64_t guid, PlayerCreateInfo* infoOut);
     bool savePlayer(Player* player);
+    
+    uint64_t getMaxGuid();
 private:    
 };
 

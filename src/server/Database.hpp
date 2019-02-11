@@ -6,6 +6,7 @@
 //
 
 #pragma once
+
 #include <sqlite3pp.h>
 #include <shared_mutex>
 
@@ -16,10 +17,9 @@ private:
     std::shared_mutex _mutex;
 public:
     Database();
-private:
-    void createDbV1();
-    
     sqlite3pp::query executeQuery(const char* queryString);
     int executeCommand(sqlite3pp::command& command);
     int executeCommand(const char* command);
+private:
+    void createDbV1();
 };
