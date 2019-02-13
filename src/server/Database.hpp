@@ -18,8 +18,9 @@ private:
 public:
     Database();
     sqlite3pp::query executeQuery(const char* queryString);
-    int executeCommand(sqlite3pp::command& command);
-    int executeCommand(const char* command);
+    sqlite3pp::query executeQuery(const std::string& queryString);
+    int executeCommand(const char* command, std::function<void(sqlite3pp::command&)> delegate = std::function<void(sqlite3pp::command&)>());
+    
 private:
     void createDbV1();
 };

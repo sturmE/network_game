@@ -20,7 +20,7 @@ public:
     CharacterDatabase(const std::shared_ptr<Database>& db);
     ~CharacterDatabase();
     
-    bool loadPlayer(uint64_t guid, PlayerCreateInfo* infoOut);
+    bool loadPlayer(const std::string& name, PlayerCreateInfo* infoOut);
     bool savePlayer(Player* player);
     
     uint64_t getMaxGuid();

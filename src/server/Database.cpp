@@ -33,7 +33,7 @@ void Database::createDbV1()
     constexpr const char* kCreateCharacterTable =
     "create table t_character ("
     "   id integer primary key autoincrement,"
-    "   name string,"
+    "   name string unique,"
     "   pos_x numeric,"
     "   pos_y numeric,"
     "   pos_z numeric"
@@ -42,20 +42,23 @@ void Database::createDbV1()
     _db.execute(kCreateCharacterTable);
 }
 
+sqlite3pp::query Database::executeQuery(const std::string& queryString)
+{
+    return executeQuery(queryString.c_str());
+}
+
 sqlite3pp::query Database::executeQuery(const char* queryString)
 {
     std::shared_lock<std::shared_mutex> readLock(_mutex);
     return sqlite3pp::query(_db, queryString);
 }
 
-int Database::executeCommand(const char* command)
-{
-   std::lock_guard<std::shared_mutex> writeLock(_mutex);
-    return _db.execute(command);
-}
-
-int Database::executeCommand(sqlite3pp::command& command)
+int Database::executeCommand(const char* command, std::function<void(sqlite3pp::command&)> delegate)
 {
     std::lock_guard<std::shared_mutex> writeLock(_mutex);
-    return command.execute();
+    sqlite3pp::command cmd(_db, command);
+    if (delegate) {
+        delegate(cmd);
+    }
+    return cmd.execute();
 }
